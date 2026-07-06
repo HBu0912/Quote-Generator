@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quote Editor — Toption</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <header>
+    <a href="/" class="header-brand">
+      <img src="/static/logo.png" alt="Toption Logo" class="logo">
+      <div>
+        <h1>Quote Generator</h1>
+        <p>Toption (Asia) Company Limited</p>
+      </div>
+    </a>
+    <nav class="header-nav">
+      <a href="/" class="nav-link">Home</a>
+      <a href="/quote" class="nav-link active">New Quote</a>
+      <form method="post" action="/logout" class="logout-form">
+        <button type="submit" class="nav-link logout-btn">Sign Out</button>
+      </form>
+    </nav>
+  </header>
+
+  <main>
+    <div id="save-status" class="save-status hidden"></div>
+
+    <form id="quote-form">
+      <input type="hidden" id="quote_id" name="quote_id" value="{{ quote_id }}">
+
+      <section class="card">
+        <h2>Quote Header</h2>
+        <div class="grid-3">
+          <label>Inquiry No.<input name="inquiry_no" value="" required></label>
+          <label>Quotation Date<input type="date" name="quotation_date" id="quotation_date"></label>
+          <label>Factory Name (internal)<input name="factory_name" value=""></label>
+          <label class="checkbox-label">
+            <input type="checkbox" name="show_factory_name_on_pdf" id="show_factory_name_on_pdf">
+            Show factory name on PDF (customer quote)
+          </label>
+          <label class="checkbox-label">
+            <input type="checkbox" name="artmark" id="artmark">
+            Artmark?
+          </label>
+          <label>Exchange Rate (VND/USD)<input type="number" name="exchange_rate_vnd" value="26130" step="1"></label>
+          <label>Export/Inspection Fee (USD)<input type="number" name="export_inspection_fee_usd" value="500" step="0.01"></label>
+          <label>Unit Price Markup %<input type="number" name="unit_price_markup_pct" value="25" step="0.1"></label>
+          <label>Mold Fee Markup %<input type="number" name="mold_fee_markup_pct" value="8" step="0.1"></label>
+          <label>Sample Markup %<input type="number" name="sample_markup_pct" value="25" step="0.1"></label>
+          <label>Sample Lead-Time (Days)<input type="number" name="sample_lead_time_days" value="105"></label>
+          <label>Production Lead-Time (Days)<input type="number" name="production_lead_time_days" value="65"></label>
+          <label>Validity (Days)<input type="number" name="validity_days" value="10"></label>
+          <label class="span-2">Other Notes<textarea name="other_notes" rows="2"></textarea></label>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="section-header">
+          <h2>Line Items</h2>
+          <p class="section-hint">Click column headers to rename fields. Enter quantities and matching factory prices as comma-separated lists in the same order (e.g. qty <code>25, 50</code> with prices <code>120000, 100000</code>). Optional <strong>Sample Fee</strong> is the factory&apos;s lump-sum sample price — marked up with Sample Markup % and shown on the PDF when entered.</p>
+          <button type="button" id="add-row" class="btn secondary">+ Add Line</button>
+        </div>
+        <div class="table-wrap">
+          <table id="line-items">
+            <thead id="line-items-head"></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="section-header">
+          <h2>Custom Fields</h2>
+          <button type="button" id="add-custom" class="btn secondary">+ Add Field</button>
+        </div>
+        <div id="custom-fields" class="custom-fields"></div>
+
+        <h3 class="line-items-subheading">Gage List</h3>
+        <p class="section-hint">Thread gages shown on the customer PDF (right of lead-time info). P/N is optional — link to a line item or leave blank.</p>
+        <div id="gage-list" class="gage-list"></div>
+        <button type="button" id="add-gage" class="btn secondary">+ Add Gage</button>
+      </section>
+
+      <section class="actions">
+        <button type="button" id="save-btn" class="btn">Save Quote</button>
+        <button type="button" id="preview-btn" class="btn">Preview Calculations</button>
+        <button type="button" id="excel-btn" class="btn primary">Generate Excel (Internal)</button>
+        <button type="button" id="excel-customer-btn" class="btn primary">Generate Excel (Customer)</button>
+        <button type="button" id="pdf-btn" class="btn primary">Generate PDF (Customer)</button>
+        <button type="button" id="delete-btn" class="btn danger hidden">Delete Quote</button>
+      </section>
+    </form>
+
+    <section id="preview-panel" class="card hidden">
+      <h2>Calculation Preview</h2>
+      <p id="preview-hint" class="preview-hint">Click a quantity row for each P/N to compare pricing scenarios. Totals below reflect your selected combination.</p>
+      <div id="preview-summary"></div>
+      <div class="table-wrap">
+        <table id="preview-table">
+          <thead>
+            <tr>
+              <th>Item</th>
+              <th>P/N</th>
+              <th>Qty</th>
+              <th>Factory USD</th>
+              <th>Export/Unit</th>
+              <th>Unit FOB</th>
+              <th>Tooling</th>
+              <th>Unit Profit</th>
+              <th>Mold Profit</th>
+              <th>Net After Export Fees</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+          <tfoot>
+            <tr id="preview-total-row">
+              <td colspan="9"><strong>Total Net Profit</strong>
+                <span class="preview-total-note">After unit &amp; mold markups, minus export/inspection fees</span>
+              </td>
+              <td id="preview-total-net" class="preview-total-value"></td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    window.QUOTE_ID = {{ quote_id|tojson }};
+  </script>
+  <script src="/static/app.js"></script>
+</body>
+</html>

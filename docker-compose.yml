@@ -1,0 +1,15 @@
+services:
+  quote-generator:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      APP_PASSWORD: ${APP_PASSWORD:-TopVN26}
+      SECRET_KEY: ${SECRET_KEY:-change-me-in-production}
+      QUOTE_DB_PATH: /app/data/quotes.db
+    volumes:
+      - quote_data:/app/data
+    restart: unless-stopped
+
+volumes:
+  quote_data:
