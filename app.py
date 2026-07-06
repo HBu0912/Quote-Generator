@@ -32,7 +32,6 @@ except ImportError:
 app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "dev-only-change-in-production")
 app.config["PERMANENT_SESSION_LIFETIME"] = timedelta(days=30)
-init_db()
 
 
 @app.before_request
@@ -44,7 +43,11 @@ def require_login():
 
 @app.route("/health")
 def health():
-    return jsonify({"ok": True})
+    try:
+        init_db()
+        return jsonify({"ok": True, "database": "turso" if os.environ.get("TURSO_DATABASE_URL") else "sqlite"})
+    except Exception as exc:
+        return jsonify({"ok": False, "error": str(exc)}), 503
 
 
 @app.route("/login", methods=["GET", "POST"])
