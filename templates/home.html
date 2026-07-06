@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Toption Quote Generator</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <header>
+    <a href="/" class="header-brand">
+      <img src="/static/logo.png" alt="Toption Logo" class="logo">
+      <div>
+        <h1>Quote Generator</h1>
+        <p>Toption (Asia) Company Limited</p>
+      </div>
+    </a>
+    <nav class="header-nav">
+      <a href="/" class="nav-link active">Home</a>
+      <a href="/quote" class="nav-link">New Quote</a>
+      <form method="post" action="/logout" class="logout-form">
+        <button type="submit" class="nav-link logout-btn">Sign Out</button>
+      </form>
+    </nav>
+  </header>
+
+  <main class="home-main">
+    <section class="hero card">
+      <h2>Saved Quotes</h2>
+      <p class="hero-sub">Search by inquiry #, part number, drawing #, factory name, description, or material.</p>
+      <div class="search-bar">
+        <input type="search" id="search-input" placeholder="Search quotes… e.g. T26004, 103964, PAPM, A360" autofocus>
+        <button type="button" id="search-btn" class="btn primary">Search</button>
+        <a href="/quote" class="btn">+ New Quote</a>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="section-header">
+        <h2 id="results-title">Recent Quotes</h2>
+        <span id="results-count" class="results-count"></span>
+      </div>
+      <div id="results-empty" class="empty-state hidden">
+        <p>No quotes found. Try a different search or create a new quote.</p>
+        <a href="/quote" class="btn primary">Create New Quote</a>
+      </div>
+      <div class="table-wrap">
+        <table id="results-table">
+          <thead>
+            <tr>
+              <th>Inquiry #</th>
+              <th>Factory</th>
+              <th>Date</th>
+              <th>Parts</th>
+              <th>P/N's</th>
+              <th>Last Saved</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <script src="/static/home.js"></script>
+</body>
+</html>

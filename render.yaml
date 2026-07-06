@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: toption-quote-generator
+    runtime: docker
+    plan: free
+    healthCheckPath: /health
+    envVars:
+      - key: APP_PASSWORD
+        sync: false
+      - key: SECRET_KEY
+        generateValue: true
+      - key: QUOTE_DB_PATH
+        value: /app/data/quotes.db
+    disk:
+      name: quote-data
+      mountPath: /app/data
+      sizeGB: 1

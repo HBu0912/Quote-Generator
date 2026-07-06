@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign In — Toption Quote Generator</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body class="login-page">
+  <main class="login-card card">
+    <img src="/static/logo.png" alt="Toption Logo" class="login-logo">
+    <h1>Quote Generator</h1>
+    <p class="login-sub">Toption (Asia) Company Limited</p>
+
+    {% if error %}
+    <p class="login-error" role="alert">{{ error }}</p>
+    {% endif %}
+
+    <form method="post" action="/login" class="login-form">
+      <input type="hidden" name="next" value="{{ next_url }}">
+      <label for="password">Password</label>
+      <input type="password" id="password" name="password" required autofocus autocomplete="current-password">
+      <button type="submit" class="btn primary">Sign In</button>
+    </form>
+  </main>
+</body>
+</html>
