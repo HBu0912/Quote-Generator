@@ -2,6 +2,14 @@
 name = "toption-quote-generator"
 version = "1.0.0"
 requires-python = ">=3.11"
+dependencies = [
+    "flask>=3.0.0",
+    "openpyxl>=3.1.0",
+    "reportlab>=4.0.0",
+    "gunicorn>=22.0.0",
+    "python-dotenv>=1.0.0",
+    "libsql-client>=0.3.1",
+]
 
 [tool.vercel]
 entrypoint = "app:app"
