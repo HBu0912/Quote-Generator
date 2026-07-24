@@ -37,7 +37,7 @@ class QuoteInput:
     unit_price_markup_pct: float = 0.25
     mold_fee_markup_pct: float = 0.08
     sample_markup_pct: float = 25
-    sample_lead_time_days: int = 105
+    sample_lead_time_days: int | None = None
     production_lead_time_days: int = 65
     validity_days: int = 10
     other_notes: str = ""
@@ -383,6 +383,12 @@ def _int(value: Any, default: int = 0) -> int:
     return int(value)
 
 
+def _optional_int(value: Any) -> int | None:
+    if value is None or value == "":
+        return None
+    return int(value)
+
+
 def _parse_qty_options(row: dict[str, Any]) -> list[int]:
     raw = row.get("qty_options")
     if raw is not None and raw != "":
@@ -499,7 +505,7 @@ def quote_from_dict(payload: dict[str, Any]) -> QuoteInput:
         unit_price_markup_pct=_float(payload.get("unit_price_markup_pct"), 25),
         mold_fee_markup_pct=_float(payload.get("mold_fee_markup_pct"), 8),
         sample_markup_pct=_float(payload.get("sample_markup_pct"), 25),
-        sample_lead_time_days=_int(payload.get("sample_lead_time_days"), 105),
+        sample_lead_time_days=_optional_int(payload.get("sample_lead_time_days")),
         production_lead_time_days=_int(payload.get("production_lead_time_days"), 65),
         validity_days=_int(payload.get("validity_days"), 10),
         other_notes=payload.get("other_notes", ""),

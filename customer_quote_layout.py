@@ -126,12 +126,16 @@ def customer_quote_meta(quote: QuoteCalculated) -> dict:
 
 
 def customer_quote_lead_rows(data: QuoteInput) -> list[tuple[str, str]]:
-    rows = [
-        ("3.) Sample Lead-Time:", f"{data.sample_lead_time_days} Days"),
-        ("4.) Production Lead-Time:", f"{data.production_lead_time_days} Days"),
-        ("5.) Validity:", f"{data.validity_days} Days"),
-        ("6.) Exchange Rate:", f"1 USD = {data.exchange_rate_vnd:,.0f} VND"),
-    ]
+    rows: list[tuple[str, str]] = []
+    n = 3
+    if data.sample_lead_time_days is not None:
+        rows.append((f"{n}.) Sample Lead-Time:", f"{data.sample_lead_time_days} Days"))
+        n += 1
+    rows.append((f"{n}.) Production Lead-Time:", f"{data.production_lead_time_days} Days"))
+    n += 1
+    rows.append((f"{n}.) Validity:", f"{data.validity_days} Days"))
+    n += 1
+    rows.append((f"{n}.) Exchange Rate:", f"1 USD = {data.exchange_rate_vnd:,.0f} VND"))
     if data.other_notes:
         rows.append(("Other:", data.other_notes))
     for label, val in data.custom_fields.items():

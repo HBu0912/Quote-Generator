@@ -233,7 +233,10 @@ function collectPayload() {
     unit_price_markup_pct: fd.get("unit_price_markup_pct"),
     mold_fee_markup_pct: fd.get("mold_fee_markup_pct"),
     sample_markup_pct: fd.get("sample_markup_pct"),
-    sample_lead_time_days: fd.get("sample_lead_time_days"),
+    sample_lead_time_days: (() => {
+      const v = fd.get("sample_lead_time_days");
+      return v === null || String(v).trim() === "" ? null : v;
+    })(),
     production_lead_time_days: fd.get("production_lead_time_days"),
     validity_days: fd.get("validity_days"),
     other_notes: fd.get("other_notes"),
@@ -304,7 +307,7 @@ function populateForm(payload) {
   set("unit_price_markup_pct", payload.unit_price_markup_pct);
   set("mold_fee_markup_pct", payload.mold_fee_markup_pct);
   set("sample_markup_pct", payload.sample_markup_pct ?? 25);
-  set("sample_lead_time_days", payload.sample_lead_time_days);
+  set("sample_lead_time_days", payload.sample_lead_time_days ?? "");
   set("production_lead_time_days", payload.production_lead_time_days);
   set("validity_days", payload.validity_days);
   set("other_notes", payload.other_notes);
