@@ -30,8 +30,17 @@ except ImportError:
     pass
 
 app = Flask(__name__)
-app.secret_key = os.environ.get("SECRET_KEY", "dev-only-change-in-production")
+_secret = (os.environ.get("SECRET_KEY") or "").strip()
+if not _secret:
+    _secret = "dev-only-change-in-production"
+app.secret_key = _secret
+app.config["SECRET_KEY"] = _secret
 app.config["PERMANENT_SESSION_LIFETIME"] = timedelta(days=30)
+# Secure cookies on HTTPS (Vercel)
+app.config["SESSION_COOKIE_HTTPONLY"] = True
+app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
+if os.environ.get("VERCEL"):
+    app.config["SESSION_COOKIE_SECURE"] = True
 
 
 @app.before_request
@@ -60,26 +69,12 @@ def login():
 
     if request.method == "POST":
         password = request.form.get("password", "")
-        try:
-            if check_password(password):
-                login_user()
-                if not isinstance(next_url, str) or not next_url.startswith("/"):
-                    next_url = url_for("home")
-                resp = redirect(next_url)
-                return resp
-            error = "Incorrect password. Please try again."
-        except Exception as exc:
-            import traceback
-
-            return (
-                jsonify({
-                    "error": "login_failed",
-                    "type": type(exc).__name__,
-                    "message": str(exc),
-                    "trace": traceback.format_exc(),
-                }),
-                500,
-            )
+        if check_password(password):
+            login_user()
+            if not isinstance(next_url, str) or not next_url.startswith("/"):
+                next_url = url_for("home")
+            return redirect(next_url)
+        error = "Incorrect password. Please try again."
 
     return render_template("login.html", error=error, next_url=next_url)
 

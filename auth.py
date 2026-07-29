@@ -2,12 +2,15 @@
 
 from __future__ import annotations
 
+import hmac
 import os
-import secrets
+import hashlib
 
 from flask import redirect, request, session, url_for
 
-APP_PASSWORD = os.environ.get("APP_PASSWORD", "TopVN26")
+
+def _expected_password() -> str:
+    return (os.environ.get("APP_PASSWORD") or "").strip() or "TopVN26"
 
 
 def is_authenticated() -> bool:
@@ -15,7 +18,13 @@ def is_authenticated() -> bool:
 
 
 def check_password(password: str) -> bool:
-    return secrets.compare_digest(password, APP_PASSWORD)
+    """Constant-time password check that tolerates unequal lengths."""
+    given = password if isinstance(password, str) else ""
+    expected = _expected_password()
+    return hmac.compare_digest(
+        hashlib.sha256(given.encode("utf-8")).digest(),
+        hashlib.sha256(expected.encode("utf-8")).digest(),
+    )
 
 
 def login_user() -> None:
