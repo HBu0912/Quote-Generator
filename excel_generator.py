@@ -126,10 +126,16 @@ def _set_calc_grid_column_widths(ws, spans: list[tuple[int, int]], weights: list
 
 def _primary_totals(quote: QuoteCalculated) -> dict[str, float | str]:
     primary = primary_line_items(quote.line_items)
+    factory_order = sum(li.factory_unit_price_usd * li.qty for li in primary)
+    revenue = sum(li.unit_pricing_fob_usd * li.qty for li in primary)
+    factory_mold = sum(li.factory_mold_fee_usd for li in primary)
+    quoted_mold = sum(li.tooling_fee_usd for li in primary)
     return {
         "num_parts": quote.num_parts,
-        "factory_order": sum(li.factory_unit_price_usd * li.qty for li in primary),
-        "revenue": sum(li.unit_pricing_fob_usd * li.qty for li in primary),
+        "factory_order": factory_order,
+        "factory_order_with_mold": factory_order + factory_mold,
+        "revenue": revenue,
+        "revenue_with_mold": revenue + quoted_mold,
         "export_fee": quote.total_export_fee_allocated,
         "unit_profit": sum(li.unit_price_profit for li in primary),
         "mold_profit": sum(li.mold_fee_profit for li in primary),
@@ -219,20 +225,58 @@ def build_internal_calc_panel(
 
     row = layout.table_data_end_row + 2
     totals = _primary_totals(quote)
-    summary_rows: list[tuple[str, float | int, str | None]] = [
-        ("P/N's", totals["num_parts"], FMT_INT),
-        ("Factory Order (USD)", totals["factory_order"], FMT_USD_2),
-        ("Quoted Revenue (USD)", totals["revenue"], FMT_USD_2),
-        ("Export / Inspection Fee", totals["export_fee"], FMT_USD_2),
-        ("Unit Profit", totals["unit_profit"], FMT_USD_2),
-        ("Mold Profit", totals["mold_profit"], FMT_USD_2),
-        ("Net Profit (1st qty / part)", totals["net_profit"], FMT_USD_2),
-    ]
+    mid_end = value_start + 2
+    mold_start = mid_end + 1
+
     _merge_fill(
         ws, row, CALC_START, row, CALC_END, "Summary (first quantity per P/N)",
         font=CALC_LABEL_FONT, fill=BRAND_LIGHT_FILL, border=TABLE_BORDER,
     )
     row += 1
+
+    # Column headers for the dual USD / USD+mold value columns
+    ws.row_dimensions[row].height = 20
+    _merge_fill(
+        ws, row, CALC_START, row, label_end, "",
+        font=CALC_NOTE_FONT, align=LEFT, fill=BRAND_LIGHT_FILL, border=TABLE_BORDER,
+    )
+    _merge_fill(
+        ws, row, value_start, row, mid_end, "USD",
+        font=CALC_LABEL_FONT, align=CENTER, fill=BRAND_LIGHT_FILL, border=TABLE_BORDER,
+    )
+    _merge_fill(
+        ws, row, mold_start, row, CALC_END, "USD Incl. Mold",
+        font=CALC_LABEL_FONT, align=CENTER, fill=BRAND_LIGHT_FILL, border=TABLE_BORDER,
+    )
+    row += 1
+
+    dual_rows: list[tuple[str, float, float]] = [
+        ("Factory Order", float(totals["factory_order"]), float(totals["factory_order_with_mold"])),
+        ("Quoted Revenue", float(totals["revenue"]), float(totals["revenue_with_mold"])),
+    ]
+    for label, base_val, with_mold in dual_rows:
+        ws.row_dimensions[row].height = 22
+        _merge_fill(
+            ws, row, CALC_START, row, label_end, label,
+            font=CALC_LABEL_FONT, align=LEFT, fill=WHITE_FILL, border=TABLE_BORDER,
+        )
+        _merge_fill(
+            ws, row, value_start, row, mid_end, base_val,
+            font=CALC_VALUE_FONT, align=LEFT, fill=WHITE_FILL, border=TABLE_BORDER, number_format=FMT_USD_2,
+        )
+        _merge_fill(
+            ws, row, mold_start, row, CALC_END, with_mold,
+            font=CALC_VALUE_FONT, align=LEFT, fill=WHITE_FILL, border=TABLE_BORDER, number_format=FMT_USD_2,
+        )
+        row += 1
+
+    summary_rows: list[tuple[str, float | int, str | None]] = [
+        ("P/N's", totals["num_parts"], FMT_INT),
+        ("Export / Inspection Fee", totals["export_fee"], FMT_USD_2),
+        ("Unit Profit", totals["unit_profit"], FMT_USD_2),
+        ("Mold Profit", totals["mold_profit"], FMT_USD_2),
+        ("Net Profit (1st qty / part)", totals["net_profit"], FMT_USD_2),
+    ]
     for label, val, fmt in summary_rows:
         ws.row_dimensions[row].height = 22
         _merge_fill(

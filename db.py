@@ -48,8 +48,16 @@ def db_connection() -> Iterator[Any]:
     if _use_turso():
         import libsql_client
 
+        # Vercel serverless cannot use Turso WebSockets (libsql:// / wss://).
+        # Force SQL-over-HTTP so the client uses https://.
+        raw_url = os.environ["TURSO_DATABASE_URL"].strip()
+        if raw_url.startswith("libsql://"):
+            raw_url = "https://" + raw_url[len("libsql://") :]
+        elif raw_url.startswith("wss://"):
+            raw_url = "https://" + raw_url[len("wss://") :]
+
         client = libsql_client.create_client_sync(
-            url=os.environ["TURSO_DATABASE_URL"],
+            url=raw_url,
             auth_token=os.environ.get("TURSO_AUTH_TOKEN", ""),
         )
         try:
