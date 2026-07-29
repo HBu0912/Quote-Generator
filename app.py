@@ -60,12 +60,26 @@ def login():
 
     if request.method == "POST":
         password = request.form.get("password", "")
-        if check_password(password):
-            login_user()
-            if not next_url.startswith("/"):
-                next_url = url_for("home")
-            return redirect(next_url)
-        error = "Incorrect password. Please try again."
+        try:
+            if check_password(password):
+                login_user()
+                if not isinstance(next_url, str) or not next_url.startswith("/"):
+                    next_url = url_for("home")
+                resp = redirect(next_url)
+                return resp
+            error = "Incorrect password. Please try again."
+        except Exception as exc:
+            import traceback
+
+            return (
+                jsonify({
+                    "error": "login_failed",
+                    "type": type(exc).__name__,
+                    "message": str(exc),
+                    "trace": traceback.format_exc(),
+                }),
+                500,
+            )
 
     return render_template("login.html", error=error, next_url=next_url)
 
